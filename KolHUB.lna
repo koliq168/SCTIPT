@@ -1,0 +1,145 @@
+-- KOL HUB (Full Script + Key + Drag UI + Drag Logo)
+
+local correctKey = "KOLHUB123"
+
+local ScreenGui = Instance.new("ScreenGui")
+local KeyFrame = Instance.new("Frame")
+local KeyBox = Instance.new("TextBox")
+local SubmitBtn = Instance.new("TextButton")
+local Status = Instance.new("TextLabel")
+
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local Btn1 = Instance.new("TextButton")
+local Btn2 = Instance.new("TextButton")
+local Btn3 = Instance.new("TextButton")
+local ToggleBtn = Instance.new("ImageButton")
+
+ScreenGui.Parent = game.CoreGui
+
+-- ================= KEY SYSTEM =================
+KeyFrame.Parent = ScreenGui
+KeyFrame.Size = UDim2.new(0, 250, 0, 150)
+KeyFrame.Position = UDim2.new(0.5, -125, 0.5, -75)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+
+KeyBox.Parent = KeyFrame
+KeyBox.Size = UDim2.new(0.8, 0, 0, 30)
+KeyBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+KeyBox.PlaceholderText = "Enter Key..."
+
+SubmitBtn.Parent = KeyFrame
+SubmitBtn.Size = UDim2.new(0.8, 0, 0, 30)
+SubmitBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
+SubmitBtn.Text = "Submit Key"
+
+Status.Parent = KeyFrame
+Status.Size = UDim2.new(1, 0, 0, 20)
+Status.Position = UDim2.new(0, 0, 0.85, 0)
+Status.Text = ""
+Status.TextColor3 = Color3.new(1,1,1)
+
+-- ================= MAIN UI =================
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 260, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+MainFrame.Visible = false
+
+-- Toggle Button (Logo)
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 10, 0.5, -25)
+ToggleBtn.Image = "rbxassetid://7733960981"
+ToggleBtn.BackgroundTransparency = 1
+
+-- ================= DRAG FUNCTION =================
+local function makeDraggable(frame)
+	local dragging, dragInput, dragStart, startPos
+
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
+			dragInput = input
+		end
+	end)
+
+	game:GetService("UserInputService").InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+end
+
+-- Apply Drag
+makeDraggable(MainFrame)
+makeDraggable(ToggleBtn)
+
+-- ================= UI =================
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1,0,0,30)
+Title.Text = "KOL HUB"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundColor3 = Color3.fromRGB(40,40,40)
+
+Btn1.Parent = MainFrame
+Btn1.Size = UDim2.new(0.9,0,0,35)
+Btn1.Position = UDim2.new(0.05,0,0.25,0)
+Btn1.Text = "FullBright + No Fog"
+
+Btn2.Parent = MainFrame
+Btn2.Size = UDim2.new(0.9,0,0,35)
+Btn2.Position = UDim2.new(0.05,0,0.5,0)
+Btn2.Text = "Boost FPS"
+
+Btn3.Parent = MainFrame
+Btn3.Size = UDim2.new(0.9,0,0,35)
+Btn3.Position = UDim2.new(0.05,0,0.75,0)
+Btn3.Text = "WallHop"
+
+-- ================= KEY CHECK =================
+SubmitBtn.MouseButton1Click:Connect(function()
+	if KeyBox.Text == correctKey then
+		KeyFrame.Visible = false
+		MainFrame.Visible = true
+	else
+		Status.Text = "Wrong Key!"
+	end
+end)
+
+-- ================= BUTTON FUNCTIONS =================
+Btn1.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/FullBrightNoFog.lna"))()
+end)
+
+Btn2.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/BOOSTFPS.lna"))()
+end)
+
+Btn3.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/WallHOP.lna"))()
+end)
+
+-- ================= TOGGLE =================
+ToggleBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = not MainFrame.Visible
+end)
