@@ -1,0 +1,222 @@
+--// SERVICES
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+--// VARIABLES
+local isWallHopEnabled = false
+local connection
+local lastHitInstance, lastFlickTime, isFlicking = nil, 0, false
+
+--// GUI SETUP
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- MAIN FRAME
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 250, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+MainFrame.BorderSizePixel = 0
+
+-- TOP BAR
+local TopBar = Instance.new("Frame")
+TopBar.Parent = MainFrame
+TopBar.Size = UDim2.new(1,0,0,30)
+TopBar.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.Size = UDim2.new(1,0,1,0)
+Title.Text = "🔥 WallHop Hub"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundTransparency = 1
+
+-- CONTENT
+local MovePage = Instance.new("Frame")
+MovePage.Parent = MainFrame
+MovePage.Size = UDim2.new(1,0,1,-30)
+MovePage.Position = UDim2.new(0,0,0,30)
+MovePage.BackgroundTransparency = 1
+
+--// DRAG MAIN UI
+local dragging = false
+local dragInput, mousePos, framePos
+
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mousePos = input.Position
+        framePos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+TopBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        MainFrame.Position = UDim2.new(
+            framePos.X.Scale,
+            framePos.X.Offset + delta.X,
+            framePos.Y.Scale,
+            framePos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+--// LOGO BUTTON (SHOW/HIDE UI)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0,50,0,50)
+ToggleBtn.Position = UDim2.new(0,20,0.5,-25)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+ToggleBtn.Text = "☰"
+ToggleBtn.TextScaled = true
+ToggleBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", ToggleBtn)
+
+local uiVisible = true
+ToggleBtn.MouseButton1Click:Connect(function()
+    uiVisible = not uiVisible
+    MainFrame.Visible = uiVisible
+end)
+
+--// DRAG LOGO
+local draggingLogo = false
+local dragInputLogo, mousePosLogo, framePosLogo
+
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        draggingLogo = true
+        mousePosLogo = input.Position
+        framePosLogo = ToggleBtn.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                draggingLogo = false
+            end
+        end)
+    end
+end)
+
+ToggleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInputLogo = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInputLogo and draggingLogo then
+        local delta = input.Position - mousePosLogo
+
+        ToggleBtn.Position = UDim2.new(
+            framePosLogo.X.Scale,
+            framePosLogo.X.Offset + delta.X,
+            framePosLogo.Y.Scale,
+            framePosLogo.Y.Offset + delta.Y
+        )
+    end
+end)
+
+--// WALLHOP
+local function performFlick()
+    if isFlicking then return end
+    isFlicking = true
+
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChild("Humanoid")
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hum or not hrp then isFlicking = false return end
+
+    hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    hrp.Velocity = Vector3.new(hrp.Velocity.X, 50, hrp.Velocity.Z)
+
+    local start = Camera.CFrame
+    Camera.CFrame = start * CFrame.Angles(0, math.rad(180), 0)
+    task.wait(0.01)
+    Camera.CFrame = start
+
+    isFlicking = false
+end
+
+local function startWallHop()
+    if connection then return end
+
+    connection = RunService.Heartbeat:Connect(function()
+        if not isWallHopEnabled then return end
+
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local ray = RaycastParams.new()
+        ray.FilterDescendantsInstances = {char}
+        ray.FilterType = Enum.RaycastFilterType.Exclude
+
+        local result = workspace:Raycast(
+            hrp.Position,
+            Camera.CFrame.LookVector * 3,
+            ray
+        )
+
+        if result and result.Instance and result.Instance.CanCollide then
+            if lastHitInstance and lastHitInstance ~= result.Instance then
+                if tick() - lastFlickTime > 0.05 then
+                    lastFlickTime = tick()
+                    performFlick()
+                end
+            end
+            lastHitInstance = result.Instance
+        else
+            lastHitInstance = nil
+        end
+    end)
+end
+
+local function stopWallHop()
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+--// BUTTON
+local WallBtn = Instance.new("TextButton")
+WallBtn.Parent = MovePage
+WallBtn.Size = UDim2.new(0,200,0,50)
+WallBtn.Position = UDim2.new(0.5,-100,0,20)
+WallBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+WallBtn.TextColor3 = Color3.new(1,1,1)
+WallBtn.Text = "WallHop: OFF"
+
+WallBtn.MouseButton1Click:Connect(function()
+    isWallHopEnabled = not isWallHopEnabled
+
+    if isWallHopEnabled then
+        startWallHop()
+    else
+        stopWallHop()
+    end
+
+    WallBtn.Text = isWallHopEnabled and "WallHop: ON" or "WallHop: OFF"
+end)
+
+--// UI CORNERS
+Instance.new("UICorner", MainFrame)
+Instance.new("UICorner", WallBtn)
