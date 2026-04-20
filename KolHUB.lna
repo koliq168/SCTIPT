@@ -112,7 +112,7 @@ Btn1.MouseButton1Click:Connect(function()
 end)
 
 Btn2.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/BOOSTFPS.lna"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/SCRIPT/BOOSTFPS.lna"))()
 end)
 
 -- ================= TOGGLE =================
