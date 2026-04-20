@@ -108,7 +108,7 @@ end)
 
 -- ================= BUTTONS =================
 Btn1.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/FullBrightNoFog.lna"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/SCRIPT/FullBrightNoFog.lna"))()
 end)
 
 Btn2.MouseButton1Click:Connect(function()
