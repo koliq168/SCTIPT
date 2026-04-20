@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/KolHUB.lna"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/koliq168/SCTIPT/refs/heads/main/SCRIPT/KolHUB.lna"))()
